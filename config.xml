@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="app.likepay.template" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Template</name>
+    <description>
+        A sample Apache Cordova application that responds to the deviceready event.
+    </description>
+    <author email="dev@likepay.co" href="https://likepay.co">
+        LikePay Team
+    </author>
+    <content src="index.html" />
+    <plugin name="cordova-plugin-whitelist" spec="1" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+    </platform>
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+    </platform>
+    <variables environment="common">
+      {
+        "APP_TYPE": "APP.CLIENT",
+        "DOC_LINK": "https://doc.likepay.app/:lang/client/:doc/index.html",
+        "LOAD_COUNT_DEF": 20
+      }
+    </variables>
+    <variables environment="development">
+      {
+        "API_HOST": "https://api.likepay.me/v1.1",
+        "REG_HOST": "https://reg.likepay.me",
+        "UPLOAD_SERVER": "https://upload.likepay.me/"
+      }
+    </variables>
+    <variables environment="production">
+      {
+        "API_HOST": "https://api.likepay.app/v1.1",
+        "REG_HOST": "https://reg.likepay.app",
+        "UPLOAD_SERVER": "https://upload.likepay.app/"
+      }
+    </variables>
+</widget>
