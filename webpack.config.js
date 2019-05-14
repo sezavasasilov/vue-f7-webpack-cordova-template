@@ -40,6 +40,7 @@ module.exports = env => {
   const DEV = MODE == 'development';
   const PROD = !DEV;
   const CONFIG = getConfigVariables(MODE);
+  const PORT = 8000;
 
   let config = {
     entry: path.join(__dirname, 'src/app.js'),
@@ -131,7 +132,7 @@ module.exports = env => {
     config.devtool = 'eval';
     config.devServer = {
       contentBase: path.join(__dirname, 'www'),
-      port: 8081,
+      port: PORT,
       stats: { colors: true },
       watchOptions: {
         aggregateTimeout: 300,

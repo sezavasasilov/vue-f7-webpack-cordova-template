@@ -44,4 +44,6 @@
         "UPLOAD_SERVER": "https://upload.likepay.app/"
       }
     </variables>
+    <hook src="hooks/before_prepare.js" type="before_prepare" />
+    <engine name="browser" spec="^5.0.4" />
 </widget>

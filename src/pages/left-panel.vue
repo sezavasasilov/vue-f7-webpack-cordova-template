@@ -11,7 +11,7 @@
             :title="key"
             :checked="key === $i18n.locale"
             :value="key"
-            @change="$i18n.locale = $event.target.value">
+            @change="changeLanguage($event)">
           </f7-list-item>
         </f7-list>
       </f7-page>
@@ -21,7 +21,12 @@
 
 <script>
 export default {
-
+  methods: {
+    changeLanguage(e) {
+      this.$i18n.locale = e.target.value;
+      if (DEV) console.log(`Language changed to ${this.$i18n.locale}`);
+    }
+  }
 }
 </script>
 
