@@ -7,6 +7,7 @@
         <f7-list>
           <f7-list-item radio name="lang-radio"
             v-for="(val, key) in $i18n.messages"
+            :key="key"
             :title="key"
             :checked="key === $i18n.locale"
             :value="key"
