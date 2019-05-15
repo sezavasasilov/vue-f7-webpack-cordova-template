@@ -8,7 +8,7 @@ Application template using Framework7, Vue.js, Webpack and Cordova.
 
 ```
 $ npm run dev
-$ cordova serve
+$ cordova run
 ```
 
 ### Debug build

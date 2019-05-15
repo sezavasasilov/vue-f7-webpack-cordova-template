@@ -40,7 +40,7 @@ module.exports = env => {
   const DEV = MODE == 'development';
   const PROD = !DEV;
   const CONFIG = getConfigVariables(MODE);
-  const PORT = 8000;
+  const PORT = 8081;
 
   let config = {
     entry: path.join(__dirname, 'src/app.js'),

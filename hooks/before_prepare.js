@@ -3,13 +3,31 @@ const Q = require('q'),
      cp = require('child_process'),
      os = require('os'),
    path = require('path'),
+ ifaces = os.networkInterfaces(),
   spawn = cp.spawn,
    exec = cp.exec;
 
 module.exports = function(context) {
 
+  function getRouterIpAddr () {
+    for (let key in ifaces) {
+      if (ifaces.hasOwnProperty(key)) {
+        for (let ipInfoKey in ifaces[key]) {
+          if (ifaces[key].hasOwnProperty(ipInfoKey)) {
+            let ipInfo = ifaces[key][ipInfoKey]
+
+            if (ipInfo.family === 'IPv4' && !ipInfo.internal)
+              return ipInfo.address
+          }
+        }
+      }
+    }
+
+    return '127.0.0.1'
+  }
+
   const sys = {
-    checkNodeModules (nodeModulesPath) {
+    checkNodeModules () {
       let defer = new Q.defer()
 
       console.log('Checking is node modules installed...');
@@ -37,7 +55,6 @@ module.exports = function(context) {
 
     startWebpackBuild (isRelease) {
 			let defer = new Q.defer();
-      console.log(isRelease);
 
 			console.log('Starting webpack build...');
 
@@ -46,18 +63,13 @@ module.exports = function(context) {
 			exec(`"${wpPath}"` + (isRelease ? ' --env.release' : ''), { cwd: pRoot, maxBuffer: 1024 * 1024 * 5 }, (error, log) => {
 				if (error) {
 					console.error(`Error happened when webpack build: ${error}`);
-					defer.reject(new Error(`Error happened when webpack build: ${error}`))
+					defer.reject(new Error(`Error happened when webpack build: ${error}`));
 				}
 
 				console.log(`Webpack log: ${log}`);
 
-				// sys.deleteFolderRecursive(targetStaticFolder, true)
-				// sys.copyRecursiveSync(staticFolder, targetStaticFolder)
-        //
-				// sys.checkManifestFile()
-
-				console.log('Webpack build completed to www folder successfully!')
-				defer.resolve()
+				console.log('Webpack build completed to www folder successfully!');
+				defer.resolve();
 			})
 
 			return defer.promise
@@ -67,11 +79,11 @@ module.exports = function(context) {
       let defer = new Q.defer(),
         outText = '',
         isResultFound = false,
-        args = [`"${webpackDevServerPath}"`, '--hot', '--inline', '--env.devserver', '--' + platform, `--public ${getRouterIpAddr()}:8081`],
+        args = [`"${webpackDevServerPath}"`, '--hot', '--inline'],
         run = epipeBombPath;
 
       if (os.platform() === 'win32') {
-        args = ['--hot', '--inline', '--env.devserver', '--' + platform, `--public ${getRouterIpAddr()}:8081`];
+        args = ['--hot', '--inline'];
         run = `"${webpackDevServerPath}.cmd"`;
       }
 
@@ -98,7 +110,7 @@ module.exports = function(context) {
             isResultFound = true;
             outText = '';
 
-            defer.resolve();
+            // defer.resolve();
           }
         }
       })
@@ -141,6 +153,14 @@ module.exports = function(context) {
 			let wwwDir = path.resolve(__dirname, '../www/')
 			sys.deleteFolderRecursive(wwwDir, true)
 		},
+
+    emptyDefer () {
+      let defer = new Q.defer();
+
+      defer.resolve();
+
+      return defer.promise;
+    },
   };
 
   const deferral = new Q.defer(),
@@ -148,6 +168,7 @@ module.exports = function(context) {
         nodeModulesPath = path.resolve(pRoot, 'node_modules/'),
         webpackPath = path.resolve(nodeModulesPath, '.bin/webpack'),
         webpackDevServerPath = path.resolve(nodeModulesPath, '.bin/webpack-dev-server'),
+        epipeBombPath = path.resolve(nodeModulesPath, '.bin/epipebomb'),
         platform = context.opts.platforms[0];
 
   const isBuild = sys.isFoundInCmdline('build'),
@@ -164,10 +185,17 @@ module.exports = function(context) {
 	else {
 		console.log('Before deploy hook started...');
 
-    sys.checkNodeModules(nodeModulesPath)
+    sys.checkNodeModules()
       .then(() => {
         sys.cleanWww();
-        return sys.startWebpackBuild(isRelease);
+
+        if (isBuild || isPrepare) {
+          return sys.startWebpackBuild(isRelease);
+        } else if (isRun || isEmulate || isServe) {
+          return sys.startWebpackDevServer(platform);
+        } else {
+          return sys.emptyDefer();
+        }
       })
       .then(() => {
         console.log('Cordova hook completed. Resuming to run your cordova command...');
