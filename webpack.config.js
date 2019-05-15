@@ -1,6 +1,4 @@
-const fs = require('fs');
 const path = require('path');
-const xmlParse = require('xml-parser');
 const webpack = require('webpack');
 
 const UglifyJsWebpackPlugin = require('uglifyjs-webpack-plugin');
@@ -8,27 +6,20 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
-// extract from config.xml
-function getConfigVariables(MODE) {
-  const xmlConfig = fs.readFileSync(path.join(__dirname, 'config.xml'), 'utf8');
-  const jsonConfig = xmlParse(xmlConfig);
+function getEnvironments(MODE) {
+  let pkgJson = require(path.join(__dirname, 'package.json'));
+  let envJson = require(path.join(__dirname, '.env.json'));
+
+  let env = {};
+  Object.assign(env, envJson.common, MODE === 'development' ? envJson.development : envJson.production);
+  for (var key in env) env[key] = typeof env[key] == 'string' ? JSON.stringify(env[key]) : env[key];
 
   const result = {
-    APP_BUNDLE: JSON.stringify(jsonConfig.root.attributes.id),
-    APP_VERSION: JSON.stringify(jsonConfig.root.attributes.version),
-    APP_NAME: JSON.stringify(jsonConfig.root.children.filter(item => item.name == 'name')[0].content)
+    APP_BUNDLE: JSON.stringify(pkgJson.name),
+    APP_VERSION: JSON.stringify(pkgJson.version),
+    APP_NAME: JSON.stringify(pkgJson.displayName),
+    ...env
   };
-
-  let variables = jsonConfig.root.children.filter(item => {
-    return item.name == 'variables' && ['common', MODE].indexOf(item.attributes.environment) >= 0;
-  });
-
-  variables.forEach(item => {
-    let groupVars = JSON.parse(item.content);
-    var field = {};
-    for (var key in groupVars) field[key] = typeof groupVars[key] == 'string' ? JSON.stringify(groupVars[key]) : groupVars[key];
-    Object.assign(result, field);
-  });
 
   return result;
 };
@@ -39,7 +30,7 @@ module.exports = env => {
   const MODE = env && (typeof env.release !== 'undefined' || typeof env.prodaction !== 'undefined') ? 'production' : 'development';
   const DEV = MODE == 'development';
   const PROD = !DEV;
-  const CONFIG = getConfigVariables(MODE);
+  const CONFIG = getEnvironments(MODE);
   const PORT = 8081;
 
   let config = {
