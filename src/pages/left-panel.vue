@@ -14,6 +14,10 @@
             @change="changeLanguage($event)">
           </f7-list-item>
         </f7-list>
+        <f7-block-title>Bundle</f7-block-title>
+        <f7-block>{{ appBundle }}</f7-block>
+        <f7-block-title>Version</f7-block-title>
+        <f7-block>{{ appVersion }}</f7-block>
       </f7-page>
     </f7-view>
   </f7-panel>
@@ -21,6 +25,12 @@
 
 <script>
 export default {
+  data() {
+    return {
+      appBundle: APP_BUNDLE,
+      appVersion: APP_VERSION
+    }
+  },
   methods: {
     changeLanguage(e) {
       this.$i18n.locale = e.target.value;
