@@ -161,6 +161,29 @@ module.exports = function(context) {
 
       return defer.promise;
     },
+
+    syncConfigs () {
+      console.log('Synchronization of configuration files...');
+
+      let cheerio = require('cheerio');
+      let pkgJsonFile = path.resolve(__dirname, '../package.json');
+      let pkgJson = require(pkgJsonFile);
+      let configFile = path.resolve(__dirname, '../config.xml');
+      let conf = cheerio.load(fs.readFileSync(configFile), { xmlMode: true });
+
+      conf('widget').attr('id', pkgJson.name);
+      conf('widget').attr('version', pkgJson.version);
+      conf('name').html(pkgJson.displayName);
+      conf('description').html(pkgJson.description);
+
+      let p = /^(.+)\s<(\S+)>\s\((\S+)\)$/g.exec(pkgJson.author);
+      conf('author').html(p[1]);
+      conf('author').attr('email', p[2]);
+      conf('author').attr('href', p[3]);
+
+      fs.writeFileSync(configFile, conf.html(), 'utf-8');
+      console.log('Сonfiguration files successfully synchronized!');
+    }
   };
 
   const deferral = new Q.defer(),
@@ -188,6 +211,7 @@ module.exports = function(context) {
     sys.checkNodeModules()
       .then(() => {
         sys.cleanWww();
+        sys.syncConfigs();
 
         if (isBuild || isPrepare) {
           return sys.startWebpackBuild(isRelease);
